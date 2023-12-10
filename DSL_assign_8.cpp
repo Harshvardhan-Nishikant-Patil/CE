@@ -1,126 +1,138 @@
-    #include <iostream>
-    #include <unordered_set>
-    using namespace std;
+#include <iostream>
+#include <unordered_set>
+using namespace std;
 
-    //creating node
-    class Node {
-    public:
-        int data;
-        Node* next;
+class Node {
+public:
+    int data;
+    Node* next;
 
-        Node(int value) {
-            data = value;
-            next = nullptr;
+    Node(int val) : data(val), next(nullptr) {}
+
+    int size() const {
+        int count = 0;
+        const Node* temp = this;
+        while (temp != nullptr) {
+            count++;
+            temp = temp->next;
         }
-    };
+        return count;
+    }
+};
 
-    //element insert
-    void insert(Node*& head, int value) {
-        Node* newNode = new Node(value);
+class LinkedList {
+public:
+    Node* head;
+
+    LinkedList() : head(nullptr) {}
+
+    void insert(int val) {
+        Node* newNode = new Node(val);
         newNode->next = head;
         head = newNode;
     }
 
-    //elements in linked list
-    void display(Node* head) {
-        Node* current = head;
-        while (current != nullptr) {
-            cout << current->data << " ";
-            current = current->next;
+    void display() const {
+        const Node* temp = head;
+        while (temp != nullptr) {
+            cout << temp->data << " ";
+            temp = temp->next;
         }
         cout << endl;
     }
 
-    int main() {
+    LinkedList intersection(const LinkedList& otherList) const {
+        LinkedList result;
+        unordered_set<int> set1;
 
-        Node* setA = nullptr;
-        Node* setB = nullptr;
-
-
-        insert(setA, 1); 
-        insert(setA, 2); 
-        insert(setB, 2); 
-        insert(setB, 3); 
-
-        //both vanilla and chocolate
-        Node* bothLiked = nullptr;
-        Node* tempA = setA;
-        while (tempA != nullptr) {
-            int studentA = tempA->data;
-            Node* tempB = setB;
-            while (tempB != nullptr) {
-                if (studentA == tempB->data) {
-                    insert(bothLiked, studentA);
-                    break;
-                }
-                tempB = tempB->next;
-            }
-            tempA = tempA->next;
+        const Node* temp1 = head;
+        while (temp1 != nullptr) {
+            set1.insert(temp1->data);
+            temp1 = temp1->next;
         }
 
-        //either vanilla or butterscotch or not both
-        Node* eitherOr = nullptr;
-        Node* tempA2 = setA;
-        Node* tempB2 = setB;
-
-        //students from set A who don't like both
-        while (tempA2 != nullptr) {
-            int studentA = tempA2->data;
-            bool found = false;
-            tempB2 = bothLiked;
-            while (tempB2 != nullptr) {
-                if (studentA == tempB2->data) {
-                    found = true;
-                    break;
-                }
-                tempB2 = tempB2->next;
+        const Node* temp2 = otherList.head;
+        while (temp2 != nullptr) {
+            if (set1.find(temp2->data) != set1.end()) {
+                result.insert(temp2->data);
             }
-            if (!found) {
-                insert(eitherOr, studentA);
-            }
-            tempA2 = tempA2->next;
+            temp2 = temp2->next;
         }
 
-        // students from set B who don't like both
-        tempB2 = setB;
-        while (tempB2 != nullptr) {
-            int studentB = tempB2->data;
-            bool found = false;
-            tempA2 = bothLiked;
-            while (tempA2 != nullptr) {
-                if (studentB == tempA2->data) {
-                    found = true;
-                    break;
-                }
-                tempA2 = tempA2->next;
-            }
-            if (!found) {
-                insert(eitherOr, studentB);
-            }
-            tempB2 = tempB2->next;
-        }
-
-        //students who like neither vanilla nor butterscotch
-        unordered_set<int> students;
-        tempA2 = setA;
-        while (tempA2 != nullptr) {
-            students.insert(tempA2->data);
-            tempA2 = tempA2->next;
-        }
-        tempB2 = setB;
-        while (tempB2 != nullptr) {
-            students.insert(tempB2->data);
-            tempB2 = tempB2->next;
-        }
-
-        cout << "Set of students who like both vanilla and butterscotch: ";
-        display(bothLiked);
-
-        cout << "Set of students who like either vanilla or butterscotch or not both: ";
-        display(eitherOr);
-
-        cout << "Number of students who like neither vanilla nor butterscotch: " << (setA == nullptr && setB == nullptr ? 0 : students.size()) << endl;
-        
-
-        return 0;
+        return result;
     }
+
+    LinkedList unionSet(const LinkedList& otherList) const {
+        LinkedList result;
+        unordered_set<int> resultSet;
+
+        const Node* temp1 = head;
+        while (temp1 != nullptr) {
+            resultSet.insert(temp1->data);
+            temp1 = temp1->next;
+        }
+
+        const Node* temp2 = otherList.head;
+        while (temp2 != nullptr) {
+            resultSet.insert(temp2->data);
+            temp2 = temp2->next;
+        }
+
+        for (int val : resultSet) {
+            result.insert(val);
+        }
+
+        return result;
+    }
+
+    int size() const {
+        int count = 0;
+        const Node* temp = head;
+        while (temp != nullptr) {
+            count++;
+            temp = temp->next;
+        }
+        return count;
+    }
+};
+
+int main() {
+    LinkedList vanilla, butterscotch;
+
+    int n, val;
+
+    cout << "Enter the number of students who like vanilla: ";
+    cin >> n;
+
+    cout << "Enter the student numbers for vanilla: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> val;
+        vanilla.insert(val);
+    }
+
+    cout << "Enter the number of students who like butterscotch: ";
+    cin >> n;
+
+    cout << "Enter the student numbers for butterscotch: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> val;
+        butterscotch.insert(val);
+    }
+
+    // a) Set of students who like both vanilla and butterscotch.
+    LinkedList intersectionSet = vanilla.intersection(butterscotch);
+    cout << "Students who like both vanilla and butterscotch: ";
+    intersectionSet.display();
+
+    // b) Set of students who like either vanilla or butterscotch or not both.
+    LinkedList unionSet = vanilla.unionSet(butterscotch);
+    cout << "Students who like either vanilla or butterscotch or not both: ";
+    unionSet.display();
+
+    // c) Number of students who like neither vanilla nor butterscotch.
+    int totalStudents = unionSet.size();
+    cout << "Number of students who like neither vanilla nor butterscotch: " << (totalStudents - intersectionSet.size()) << endl;
+
+    return 0;
+}
+ 
